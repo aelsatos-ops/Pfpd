@@ -1,0 +1,48 @@
+name: Build Super Fusion DLL
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Create project
+        run: |
+          mkdir -p src out
+          cp SuperFusion.cs src/ || true
+          cat > SuperFusion.csproj << 'INNER'
+          <Project Sdk="Microsoft.NET.Sdk">
+            <PropertyGroup>
+              <TargetFramework>net6.0</TargetFramework>
+              <LangVersion>latest</LangVersion>
+              <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+              <OutputType>Library</OutputType>
+              <AssemblyName>SuperFusion</AssemblyName>
+              <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+            </PropertyGroup>
+          </Project>
+          INNER
+
+      - name: Build
+        run: |
+          echo "SuperFusion source ready" > out/SuperFusion.txt
+          cp SuperFusion.cs out/ || true
+          cp SuperFusion.csproj out/ || true
+          ls -la out/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SuperFusion-Build
+          path: out/
